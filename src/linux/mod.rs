@@ -748,7 +748,7 @@ impl fmt::Debug for MMAPPage {
 pub struct PerfCounter {
     fd: ::libc::c_int,
     file: File,
-    attributes: perf_format::EventAttr,
+    pub attributes: perf_format::EventAttr,
 }
 
 impl PerfCounter {
@@ -796,7 +796,7 @@ impl<'a> AbstractPerfCounter for PerfCounter {
 }
 
 pub struct SamplingPerfCounter {
-    pc: PerfCounter,
+    pub pc: PerfCounter,
     map: mmap::MemoryMap,
     events_size: usize,
 }
@@ -842,10 +842,10 @@ enum EventHeaderMisc {
 }*/
 
 #[derive(Default, Debug)]
-struct EventHeader {
-    event_type: u32,
-    misc: u16,
-    size: u16,
+pub struct EventHeader {
+    pub event_type: u32,
+    pub misc: u16,
+    pub size: u16,
 }
 
 impl EventHeader {
@@ -905,11 +905,11 @@ impl MMAPRecord {
 /// This record indicates when events are lost.
 #[derive(Debug)]
 pub struct LostRecord {
-    header: EventHeader,
+    pub header: EventHeader,
     /// Unique event ID of the samples that were lost.
-    id: u64,
+    pub id: u64,
     /// The number of events that were lost.
-    lost: u64,
+    pub lost: u64,
 }
 
 impl LostRecord {
@@ -918,21 +918,17 @@ impl LostRecord {
         let id: u64 = read(ptr, 8);
         let lost: u64 = read(ptr, 16);
 
-        LostRecord {
-            header,
-            id,
-            lost,
-        }
+        LostRecord { header, id, lost }
     }
 }
 
 /// This record indicates a change in the process name.
 #[derive(Debug)]
 pub struct CommRecord {
-    header: EventHeader,
-    pid: u32,
-    tid: u32,
-    comm: String,
+    pub header: EventHeader,
+    pub pid: u32,
+    pub tid: u32,
+    pub comm: String,
 }
 
 impl CommRecord {
@@ -960,12 +956,12 @@ impl CommRecord {
 /// This record indicates a process exit event.
 #[derive(Debug)]
 pub struct ExitRecord {
-    header: EventHeader,
-    pid: u32,
-    ppid: u32,
-    tid: u32,
-    ptid: u32,
-    time: u64,
+    pub header: EventHeader,
+    pub pid: u32,
+    pub ppid: u32,
+    pub tid: u32,
+    pub ptid: u32,
+    pub time: u64,
 }
 
 impl ExitRecord {
@@ -992,10 +988,10 @@ impl ExitRecord {
 #[repr(C)]
 #[derive(Debug)]
 pub struct ThrottleRecord {
-    header: EventHeader,
-    time: u64,
-    id: u64,
-    stream_id: u64,
+    pub header: EventHeader,
+    pub time: u64,
+    pub id: u64,
+    pub stream_id: u64,
 }
 
 impl ThrottleRecord {
@@ -1017,12 +1013,12 @@ impl ThrottleRecord {
 /// This record indicates a fork event.
 #[derive(Debug)]
 pub struct ForkRecord {
-    header: EventHeader,
-    pid: u32,
-    ppid: u32,
-    tid: u32,
-    ptid: u32,
-    time: u64,
+    pub header: EventHeader,
+    pub pid: u32,
+    pub ppid: u32,
+    pub tid: u32,
+    pub ptid: u32,
+    pub time: u64,
 }
 
 impl ForkRecord {
@@ -1049,10 +1045,10 @@ impl ForkRecord {
 #[repr(C)]
 #[derive(Debug)]
 pub struct ReadRecord {
-    header: EventHeader,
-    pid: u32,
-    tid: u32,
-    value: FileReadFormat, // TODO with PERF_FORMAT_GROUP: values: Vec<FileReadFormat>
+    pub header: EventHeader,
+    pub pid: u32,
+    pub tid: u32,
+    pub value: FileReadFormat, // TODO with PERF_FORMAT_GROUP: values: Vec<FileReadFormat>
 }
 
 impl ReadRecord {
@@ -1072,71 +1068,71 @@ impl ReadRecord {
 }
 
 #[derive(Debug)]
-struct BranchEntry {
+pub struct BranchEntry {
     pub from: u64,
     pub to: u64,
-    flags: u64,
+    pub flags: u64,
 }
 
 /// This record indicates a sample.
 #[derive(Debug)]
 pub struct SampleRecord {
-    header: EventHeader,
+    pub header: EventHeader,
     /// if PERF_SAMPLE_IP
-    ip: u64,
+    pub ip: u64,
     /// if PERF_SAMPLE_TID
-    pid: u32,
+    pub pid: u32,
     /// if PERF_SAMPLE_TID
-    tid: u32,
+    pub tid: u32,
     /// if PERF_SAMPLE_TIME
-    time: u64,
+    pub time: u64,
     /// if PERF_SAMPLE_ADDR
-    addr: u64,
+    pub addr: u64,
     /// if PERF_SAMPLE_ID
-    id: u64,
+    pub id: u64,
     /// if PERF_SAMPLE_STREAM_ID
-    stream_id: u64,
+    pub stream_id: u64,
     /// if PERF_SAMPLE_CPU
-    cpu: u32,
+    pub cpu: u32,
     /// if PERF_SAMPLE_CPU
-    res: u32,
+    pub res: u32,
     /// if PERF_SAMPLE_PERIOD
-    period: u64,
+    pub period: u64,
 
     /// if PERF_SAMPLE_READ
     /// # TODO
     /// FILE GROUP FORMAT is different...
-    v: FileReadFormat,
+    pub v: FileReadFormat,
 
     //u64   nr;         /* if PERF_SAMPLE_CALLCHAIN */
     //u64   ips[nr];    /* if PERF_SAMPLE_CALLCHAIN */
-    ips: Vec<u64>,
+    pub ips: Vec<u64>,
 
     /// u32   size;       /* if PERF_SAMPLE_RAW */
     /// char  data[size]; /* if PERF_SAMPLE_RAW */
-    raw_sample: Vec<u8>,
+    pub raw_sample: Vec<u8>,
 
     /// u64   bnr;        /* if PERF_SAMPLE_BRANCH_STACK */
     /// struct perf_branch_entry lbr[bnr];
-    lbr: Vec<BranchEntry>,
+    pub lbr: Vec<BranchEntry>,
 
     /// u64   abi;        /* if PERF_SAMPLE_REGS_USER */
-    abi: u64,
+    pub abi: u64,
 
     ///  u64   regs[weight(mask)];
     /// if PERF_SAMPLE_REGS_USER
-    regs: Vec<u64>,
+    pub regs: Vec<u64>,
 
     /// u64   size;       /* if PERF_SAMPLE_STACK_USER */
     /// char  data[size]; /* if PERF_SAMPLE_STACK_USER */
-    user_stack: Vec<u8>,
+    pub user_stack: Vec<u8>,
 
     /// u64   dyn_size;   /* if PERF_SAMPLE_STACK_USER */
-    dyn_size: u64,
+    pub dyn_size: u64,
     /// u64   weight;     /* if PERF_SAMPLE_WEIGHT */
-    weight: u64,
+    pub weight: u64,
     /// u64   data_src;   /* if PERF_SAMPLE_DATA_SRC */
-    data_str: u64,
+    pub data_str: u64,
 }
 
 impl SampleRecord {
